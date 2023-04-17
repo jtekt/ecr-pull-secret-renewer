@@ -1,0 +1,14 @@
+stages:
+  - deploy
+
+deploy:
+  stage: deploy
+  only:
+    - master
+    - main
+  script:
+    - kubectl apply -f ./manifest.yml
+  environment:
+    name: onpremise
+    kubernetes:
+      namespace: ${K8S_NAMESPACE}

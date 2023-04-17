@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: ecr-credentials-renewer
 spec:
-  schedule: "* * * * *"
+  schedule: "0 7 * * *"
   jobTemplate:
     spec:
       template:
