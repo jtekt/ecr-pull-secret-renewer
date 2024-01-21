@@ -10,10 +10,6 @@ spec:
         spec:
           serviceAccountName: ecr-credentials-renewer
           restartPolicy: OnFailure
-          volumes:
-            - name: ecr-credentials-renewer
-              configMap:
-                name: ecr-credentials-renewer
           containers:
             - name: kubectl
               image: moreillon/ci-dind:4bca50d7
@@ -24,7 +20,10 @@ spec:
                 - mountPath: /script.sh
                   name: ecr-credentials-renewer
                   subPath: script.sh
-
+          volumes:
+            - name: ecr-credentials-renewer
+              configMap:
+                name: ecr-credentials-renewer
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -32,36 +31,35 @@ metadata:
   name: ecr-credentials-renewer
 data:
   script.sh: |
-    kubectl create secret docker-registry ecr-credentials \
-      --docker-server=732469118990.dkr.ecr.ap-northeast-1.amazonaws.com \
-      --docker-username=AWS \
-      --docker-password $(curl http://10.115.1.100:30990/password) \
-      --dry-run=client -o yaml \
-      | kubectl apply -f - \
+    #!/bin/bash
 
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: ecr-credentials-renewer
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: ecr-credentials-renewer
-rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "patch", "list", "watch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: ecr-credentials-renewer
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: ecr-credentials-renewer
-subjects:
-  - kind: ServiceAccount
-    name: ecr-credentials-renewer
+    secretName='ecr-credentials'
+    namespaces=$(kubectl get ns --no-headers |  awk '{print $1}')
+    password=$(curl http://10.115.1.100:30990/password)
+
+    for namespace in $namespaces;
+    do
+
+      isException=false
+
+      # TODO: have this as env var
+      for ex in 'kube-system' 'ingress' 'kube-public' 'kube-node-lease';
+      do
+        if [ "$ex" == "$namespace" ]; 
+        then
+          isException=true
+        fi
+      done
+
+      if ! $isException ;
+      then
+        echo "Applying secret for namesapce $namespace"
+        kubectl create secret docker-registry $secretName \
+          --docker-server=732469118990.dkr.ecr.ap-northeast-1.amazonaws.com \
+          --docker-username=AWS \
+          --docker-password $password \
+          --dry-run=client -o yaml \
+          | kubectl apply -n $namespace -f - 
+      fi
+      
+    done
