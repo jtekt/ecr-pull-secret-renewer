@@ -3,22 +3,11 @@
 secretName='ecr-credentials'
 namespaces=$(kubectl get ns --no-headers |  awk '{print $1}')
 password=$(curl http://10.115.1.100:30990/password)
+exceptions=('kube-system' 'ingress' 'kube-public' 'kube-node-lease')
 
 for namespace in $namespaces;
 do
-
-  isException=false
-
-  # TODO: have this as env var
-  for ex in 'kube-system' 'ingress' 'kube-public' 'kube-node-lease';
-  do
-    if [ "$ex" == "$namespace" ]; 
-    then
-      isException=true
-    fi
-  done
-
-  if ! $isException ;
+  if [[ ! $(echo ${exceptions[@]} | fgrep -w $namespace ) ]]
   then
     echo "Applying secret for namesapce $namespace"
     kubectl create secret docker-registry $secretName \
@@ -27,6 +16,8 @@ do
       --docker-password $password \
       --dry-run=client -o yaml \
       | kubectl apply -n $namespace -f - 
+  else 
+    echo "$namespace is an exception, skipping..."
   fi
   
 done
