@@ -36,7 +36,7 @@ data:
     secretName='ecr-credentials'
     namespaces=$(kubectl get ns --no-headers |  awk '{print $1}')
     password=$(curl http://10.115.1.100:30990/password)
-    exceptions=('kube-system' 'ingress' 'kube-public' 'kube-node-lease')
+    exceptions=('kube-system' 'ingress' 'kube-node-lease')
 
     for namespace in $namespaces;
     do
