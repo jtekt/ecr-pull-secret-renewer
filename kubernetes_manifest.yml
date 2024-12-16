@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: ecr-credentials-renewer
 spec:
-  schedule: "19 * * * *"
+  schedule: "55 * * * *"
   jobTemplate:
     spec:
       template:
@@ -11,11 +11,8 @@ spec:
           serviceAccountName: ecr-credentials-renewer
           restartPolicy: OnFailure
           containers:
-            - name: kubectl
-              image: moreillon/ci-dind:4bca50d7
-              command:
-                - /bin/bash
-                - /script.sh
+            - name: ecr-credentials-renewer
+              image: ${CONTAINER_IMAGE_TAGGED}
               env:
                 - name: HTTP_PROXY
                   value: http://172.16.105.13:8118
@@ -24,11 +21,22 @@ spec:
               envFrom:
                 - secretRef:
                     name: environment-variables
-              volumeMounts:
-                - mountPath: /script.sh
-                  name: ecr-credentials-renewer
-                  subPath: script.sh
-          volumes:
-            - name: ecr-credentials-renewer
-              configMap:
-                name: ecr-credentials-renewer
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ecr-credentials-renewer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ecr-credentials-renewer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: ecr-credentials-renewer
+    namespace: moreillon
