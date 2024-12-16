@@ -1,23 +1,23 @@
 #!/bin/bash
 
-secretName='ecr-credentials'
-namespaces=$(kubectl get ns --no-headers |  awk '{print $1}')
-password=$(curl http://10.115.1.100:30990/password)
-exceptions=('kube-system' 'ingress' 'kube-public' 'kube-node-lease')
+SECRET_NAME='ecr-credentials'
+NAMESPACES=$(kubectl get ns --no-headers |  awk '{print $1}')
+PASSWORD=$(aws ecr get-login-password)
+EXCEPTIONS=('kube-system' 'ingress' 'kube-public' 'kube-node-lease')
 
-for namespace in $namespaces;
+for NAMESPACE in $NAMESPACES;
 do
-  if [[ ! $(echo ${exceptions[@]} | fgrep -w $namespace ) ]]
+  if [[ ! $(echo ${EXCEPTIONS[@]} | fgrep -w $NAMESPACE ) ]]
   then
-    echo "Applying secret for namesapce $namespace"
-    kubectl create secret docker-registry $secretName \
-      --docker-server=732469118990.dkr.ecr.ap-northeast-1.amazonaws.com \
+    echo "Applying secret for namesapce $NAMESPACE"
+    kubectl create secret docker-registry $SECRET_NAME \
+      --docker-server=$AWS_ECR_URL \
       --docker-username=AWS \
-      --docker-password $password \
+      --docker-password $PASSWORD \
       --dry-run=client -o yaml \
-      | kubectl apply -n $namespace -f - 
+      | kubectl apply -n $NAMESPACE -f - 
   else 
-    echo "$namespace is an exception, skipping..."
+    echo "$NAMESPACE is an exception, skipping..."
   fi
   
 done

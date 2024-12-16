@@ -7,7 +7,7 @@ deploy:
     - master
     - main
   script:
-    - kubectl apply -f ./ecr-crednetials-renewer.yml
+    - kubectl apply -f ./manifests
   environment:
     name: onpremise
     kubernetes:

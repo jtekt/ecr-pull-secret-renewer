@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ecr-credentials-renewer
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: ecr-credentials-renewer
+          restartPolicy: OnFailure
+          containers:
+            - name: kubectl
+              image: moreillon/ci-dind:4bca50d7
+              command:
+                - /bin/bash
+                - /script.sh
+              envFrom:
+                - secretRef:
+                    name: environment-variables
+              volumeMounts:
+                - mountPath: /script.sh
+                  name: ecr-credentials-renewer
+                  subPath: script.sh
+          volumes:
+            - name: ecr-credentials-renewer
+              configMap:
+                name: ecr-credentials-renewer
