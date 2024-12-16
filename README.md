@@ -1,6 +1,6 @@
 # AWS ECR credentials renewer
 
-A simple script to update an imagePullSecret in every namespace in other to pull images from AWS ECR
+A simple container to update an imagePullSecret in every namespace of a Kubernetes cluster in order to pull images from AWS ECR.
 
 ## Environment variables
 
