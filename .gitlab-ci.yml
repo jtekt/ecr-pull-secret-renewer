@@ -15,7 +15,8 @@ variables:
 build:
   stage: build
   only:
-    - tags
+    - master
+    - main
   tags:
     - dind
   before_script:
@@ -37,7 +38,8 @@ deploy:
   tags:
     - dind
   only:
-    - tags
+    - master
+    - main
   script:
     - envsubst < kubernetes_manifest.yml | kubectl apply -f -
   environment:
