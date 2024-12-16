@@ -1,5 +1,7 @@
 # AWS ECR credentials renewer
 
+A simple script to update an imagePullSecret in every namespace in other to pull images from AWS ECR
+
 ## Environment variables
 
 - AWS_ACCESS_KEY_ID

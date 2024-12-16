@@ -1,9 +1,17 @@
+
 #!/bin/bash
 
 SECRET_NAME='ecr-credentials'
-NAMESPACES=$(kubectl get ns --no-headers |  awk '{print $1}')
-PASSWORD=$(aws ecr get-login-password)
 EXCEPTIONS=('kube-system' 'ingress' 'kube-public' 'kube-node-lease')
+
+echo "Retrieving password from $AWS_ECR_URL"
+PASSWORD=$(aws ecr get-login-password)
+
+# Unsetting proxy so as to not interfere with kubectl
+unset HTTP_PROXY
+unset HTTPS_PROXY
+
+NAMESPACES=$(kubectl get ns --no-headers |  awk '{print $1}')
 
 for NAMESPACE in $NAMESPACES;
 do
@@ -19,6 +27,6 @@ do
   else 
     echo "$NAMESPACE is an exception, skipping..."
   fi
-  
 done
 
+echo "Secret renewal complete"

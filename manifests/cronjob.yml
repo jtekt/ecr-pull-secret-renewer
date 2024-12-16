@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: ecr-credentials-renewer
 spec:
-  schedule: "0 * * * *"
+  schedule: "19 * * * *"
   jobTemplate:
     spec:
       template:
@@ -16,6 +16,11 @@ spec:
               command:
                 - /bin/bash
                 - /script.sh
+              env:
+                - name: HTTP_PROXY
+                  value: http://172.16.105.13:8118
+                - name: HTTPS_PROXY
+                  value: http://172.16.105.13:8118
               envFrom:
                 - secretRef:
                     name: environment-variables
