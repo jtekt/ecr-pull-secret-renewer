@@ -1,4 +1,4 @@
-# AWS ECR credentials renewer
+# ECR pull secret renewer
 
 A simple container to update an imagePullSecret in every namespace of a Kubernetes cluster in order to pull images from AWS ECR.
 
