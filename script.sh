@@ -2,7 +2,7 @@
 #!/bin/bash
 
 SECRET_NAME='ecr-credentials'
-EXCEPTIONS=('kube-system' 'ingress' 'kube-public' 'kube-node-lease')
+EXCEPTIONS=('kube-system' 'ingress' 'kube-node-lease')
 
 echo "Retrieving password from $AWS_ECR_URL"
 PASSWORD=$(aws ecr get-login-password)
